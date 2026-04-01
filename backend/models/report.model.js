@@ -1,10 +1,11 @@
-import mongoose from 'mongoose'
+const mongoose = require('mongoose')
 
 const reportSchema = new mongoose.Schema({
   consultation_id: { type: mongoose.Schema.Types.ObjectId, ref: 'Consultation' },
-  filePath: String,
-  fileName: String,
-  generatedAt: { type: Date, default: Date.now },
+  filePath:        String,
+  fileName:        String,
+  pdf_filename:    String,
+  generatedAt:     { type: Date, default: Date.now },
 }, { timestamps: true })
 
-export default mongoose.model('Report', reportSchema)
+module.exports = mongoose.model('Report', reportSchema)

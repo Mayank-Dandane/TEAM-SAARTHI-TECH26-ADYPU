@@ -1,6 +1,6 @@
-import multer from 'multer'
-import path from 'path'
-import fs from 'fs'
+const multer = require('multer')
+const path = require('path')
+const fs = require('fs')
 
 const uploadDir = './uploads'
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir)
@@ -18,4 +18,6 @@ const fileFilter = (req, file, cb) => {
   else cb(new Error('Only audio files allowed'), false)
 }
 
-export const upload = multer({ storage, fileFilter, limits: { fileSize: 25 * 1024 * 1024 } })
+const upload = multer({ storage, fileFilter, limits: { fileSize: 25 * 1024 * 1024 } })
+
+module.exports = upload

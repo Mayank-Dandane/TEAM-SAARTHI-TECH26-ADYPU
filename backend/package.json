@@ -2,7 +2,6 @@
   "name": "doctor-copilot-backend",
   "version": "1.0.0",
   "description": "AI-Powered Clinical Documentation Automation System — Backend",
-  "type": "module",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
