@@ -59,15 +59,27 @@ router.post(
         });
       }
 
-      const result = await pipeline.run({
+    const result = await pipeline.run({
         audioFilePath: hasAudio      ? req.file.path              : null,
-        transcript:    hasTranscript ? req.body.transcript.trim() : null
+        transcript:    hasTranscript ? req.body.transcript.trim() : null,
+        patientName:   req.body.patientName || 'Unknown',
+        doctorName:    req.body.doctorName  || 'Unknown'
+      });
+
+      // Save to DB
+      const saved = await db.savePipelineResult({
+        patientName: req.body.patientName || 'Unknown',
+        doctorName:  req.body.doctorName  || 'Unknown',
+        result
       });
 
       return res.status(200).json({
         success:            true,
         processing_time_ms: Date.now() - startTime,
-        data:               result
+        data: {
+          ...result,
+          consultationId: saved?.consultationId || null
+        }
       });
     } catch (err) {
       next(err);
@@ -205,5 +217,24 @@ router.delete(
     }
   }
 );
+
+// GET /api/consultation/:id/pdf
+router.get('/:id/pdf', async (req, res, next) => {
+  try {
+    const consultation = await db.getConsultationById(req.params.id);
+    if (!consultation) return res.status(404).json({ error: 'Consultation not found' });
+    
+    const reportPath = consultation.reportPath;
+    if (!reportPath || !fs.existsSync(reportPath)) {
+      return res.status(404).json({ error: 'PDF not found on disk' });
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename="report_${req.params.id}.pdf"`);
+    fs.createReadStream(reportPath).pipe(res);
+  } catch (err) {
+    next(err);
+  }
+});
 
 module.exports = router;
