@@ -1,28 +1,31 @@
-function Section({ title, children, accent = 'cyan' }) {
-  const accentMap = {
-    cyan: { color: 'var(--accent-cyan)', bg: 'var(--accent-cyan-dim)', border: '#00d4ff22' },
-    green: { color: 'var(--accent-green)', bg: 'var(--accent-green-dim)', border: '#00ff9d22' },
-    amber: { color: 'var(--accent-amber)', bg: 'var(--accent-amber-dim)', border: '#ffb80022' },
+function SectionCard({ title, accent = 'blue', children }) {
+  const colors = {
+    blue:  { bar: 'var(--blue)',  bg: 'var(--blue-light)',  label: '#1e40af' },
+    teal:  { bar: 'var(--teal)',  bg: 'var(--teal-light)',  label: '#0f766e' },
+    amber: { bar: 'var(--amber)', bg: 'var(--amber-light)', label: '#92400e' },
+    green: { bar: 'var(--green)', bg: 'var(--green-light)', label: '#14532d' },
+    red:   { bar: 'var(--red)',   bg: 'var(--red-light)',   label: '#991b1b' },
   }
-  const a = accentMap[accent]
+  const c = colors[accent] || colors.blue
 
   return (
-    <div className="card fade-in" style={{ padding: 0, overflow: 'hidden' }}>
+    <div className="card fade-in" style={{ overflow: 'hidden', marginBottom: 0 }}>
       <div style={{
-        padding: '12px 16px',
-        borderBottom: `1px solid ${a.border}`,
-        background: a.bg,
+        padding: '10px 16px',
+        background: c.bg,
+        borderBottom: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', gap: 8,
       }}>
-        <div style={{ width: 3, height: 14, borderRadius: 2, background: a.color }} />
-        <span style={{ 
-          fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 13,
-          color: a.color, letterSpacing: '0.05em', textTransform: 'uppercase'
+        <div style={{ width: 3, height: 14, borderRadius: 2, background: c.bar, flexShrink: 0 }} />
+        <span style={{
+          fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+          letterSpacing: '0.07em', color: c.label,
+          fontFamily: 'Nunito Sans, sans-serif',
         }}>
           {title}
         </span>
       </div>
-      <div style={{ padding: '16px' }}>
+      <div style={{ padding: '14px 16px' }}>
         {children}
       </div>
     </div>
@@ -33,13 +36,11 @@ function Tag({ label }) {
   return (
     <span style={{
       display: 'inline-flex', alignItems: 'center',
-      padding: '3px 10px',
-      background: 'var(--bg-secondary)',
-      border: '1px solid var(--border)',
-      borderRadius: 4,
-      fontSize: 13,
-      color: 'var(--text-primary)',
-      fontFamily: 'DM Sans, sans-serif',
+      padding: '3px 10px', borderRadius: 20,
+      background: 'var(--blue-light)',
+      border: '1px solid var(--blue-mid)',
+      fontSize: 12.5, color: 'var(--blue)',
+      fontWeight: 600,
     }}>
       {label}
     </span>
@@ -49,30 +50,28 @@ function Tag({ label }) {
 function Field({ label, value }) {
   if (!value || value === 'N/A' || value === 'None') return null
   return (
-    <div style={{ marginBottom: 12 }}>
-      <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace', 
-        textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 4 }}>
-        {label}
-      </div>
-      <div style={{ fontSize: 14, color: 'var(--text-primary)', lineHeight: 1.6 }}>
-        {value}
-      </div>
+    <div style={{ marginBottom: 10 }}>
+      <div className="section-label" style={{ marginBottom: 3 }}>{label}</div>
+      <div style={{ fontSize: 14, color: 'var(--text-body)', lineHeight: 1.65 }}>{value}</div>
     </div>
   )
 }
 
 function MedTable({ medications }) {
-  if (!medications?.length) return <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No medications recorded</p>
+  if (!medications?.length)
+    return <p style={{ color: 'var(--text-faint)', fontSize: 13.5 }}>No medications recorded.</p>
+
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13.5 }}>
         <thead>
-          <tr>
+          <tr style={{ background: 'var(--surface-2)' }}>
             {['Drug', 'Dosage', 'Frequency', 'Duration', 'Route'].map(h => (
               <th key={h} style={{
                 textAlign: 'left', padding: '8px 12px',
-                fontFamily: 'JetBrains Mono, monospace', fontSize: 11,
-                color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em',
+                fontFamily: 'Nunito Sans, sans-serif', fontSize: 11,
+                fontWeight: 700, color: 'var(--text-muted)',
+                textTransform: 'uppercase', letterSpacing: '0.06em',
                 borderBottom: '1px solid var(--border)',
               }}>{h}</th>
             ))}
@@ -80,9 +79,16 @@ function MedTable({ medications }) {
         </thead>
         <tbody>
           {medications.map((med, i) => (
-            <tr key={i} style={{ borderBottom: '1px solid var(--border)' }}>
+            <tr key={i} style={{
+              borderBottom: '1px solid var(--border)',
+              background: i % 2 === 0 ? 'var(--surface)' : 'var(--surface-2)',
+            }}>
               {[med.name || med.drug_name, med.dosage, med.frequency, med.duration, med.route || 'Oral'].map((val, j) => (
-                <td key={j} style={{ padding: '10px 12px', color: val ? 'var(--text-primary)' : 'var(--text-muted)' }}>
+                <td key={j} style={{
+                  padding: '9px 12px',
+                  color: val ? 'var(--text-body)' : 'var(--text-faint)',
+                  fontWeight: j === 0 ? 600 : 400,
+                }}>
                   {val || '—'}
                 </td>
               ))}
@@ -96,15 +102,24 @@ function MedTable({ medications }) {
 
 function ScoreBar({ score }) {
   const pct = Math.round((score || 0) * 100)
-  const color = pct >= 80 ? 'var(--accent-green)' : pct >= 50 ? 'var(--accent-amber)' : 'var(--accent-red)'
+  const color = pct >= 80 ? 'var(--green)' : pct >= 50 ? 'var(--amber)' : 'var(--red)'
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-      <div style={{ flex: 1, height: 8, background: 'var(--bg-secondary)', borderRadius: 4, overflow: 'hidden' }}>
-        <div style={{ height: '100%', width: `${pct}%`, background: color, borderRadius: 4, transition: 'width 1s ease' }} />
+    <div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+        <span style={{ fontSize: 13.5, color: 'var(--text-body)', fontWeight: 600 }}>Record Completeness</span>
+        <span style={{
+          fontFamily: 'JetBrains Mono, monospace', fontSize: 13,
+          fontWeight: 700, color,
+        }}>{pct}%</span>
       </div>
-      <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 13, color, minWidth: 36 }}>
-        {pct}%
-      </span>
+      <div style={{ height: 8, background: 'var(--surface-2)', borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)' }}>
+        <div style={{
+          height: '100%', width: `${pct}%`,
+          background: color, borderRadius: 8,
+          transition: 'width 1s ease',
+        }} />
+      </div>
     </div>
   )
 }
@@ -114,159 +129,154 @@ export default function EMRResults({ data }) {
 
   const { extractedData, structuredEMR, validationReport, transcript } = data
 
-  const symptoms = extractedData?.symptoms || []
-  const medications = extractedData?.medications || structuredEMR?.medications || []
-  const diagnosis = extractedData?.possible_diagnosis || extractedData?.diagnosis || structuredEMR?.diagnosis
+  const symptoms      = extractedData?.symptoms || []
+  const medications   = extractedData?.medications || structuredEMR?.medications || []
+  const diagnosis     = extractedData?.possible_diagnosis || extractedData?.diagnosis || structuredEMR?.diagnosis
   const chiefComplaint = extractedData?.chief_complaint || structuredEMR?.chief_complaint
-  const history = extractedData?.history_of_present_illness || extractedData?.history || structuredEMR?.history_of_present_illness
-  const vitals = extractedData?.vitals || structuredEMR?.vitals
-  const physicalExam = structuredEMR?.physical_examination || structuredEMR?.physical_exam
-  const assessment = structuredEMR?.assessment
-  const plan = structuredEMR?.plan
-  const followUp = structuredEMR?.follow_up || extractedData?.follow_up
-  const allergies = extractedData?.allergies || structuredEMR?.allergies
-  const completeness = validationReport?.completeness_score
+  const history       = extractedData?.history_of_present_illness || extractedData?.history || structuredEMR?.history_of_present_illness
+  const vitals        = extractedData?.vitals || structuredEMR?.vitals
+  const physicalExam  = structuredEMR?.physical_examination || structuredEMR?.physical_exam
+  const assessment    = structuredEMR?.assessment
+  const plan          = structuredEMR?.plan
+  const followUp      = structuredEMR?.follow_up || extractedData?.follow_up
+  const allergies     = extractedData?.allergies || structuredEMR?.allergies
+  const completeness  = validationReport?.completeness_score
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
 
-      {/* Completeness score */}
+      {/* Completeness */}
       {completeness !== undefined && (
-        <div className="card fade-in" style={{ padding: '16px 20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 14 }}>
-              Record Completeness
-            </span>
-            <span className={`badge ${completeness >= 0.8 ? 'badge-green' : completeness >= 0.5 ? 'badge-amber' : 'badge-red'}`}>
-              {completeness >= 0.8 ? 'HIGH QUALITY' : completeness >= 0.5 ? 'PARTIAL' : 'INCOMPLETE'}
-            </span>
-          </div>
+        <div className="card fade-in" style={{ padding: '16px 18px' }}>
           <ScoreBar score={completeness} />
           {validationReport?.missing_fields?.length > 0 && (
-            <div style={{ marginTop: 10, fontSize: 12, color: 'var(--text-muted)' }}>
-              Missing: {validationReport.missing_fields.join(', ')}
-            </div>
+            <p style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+              Missing fields: {validationReport.missing_fields.join(', ')}
+            </p>
           )}
         </div>
       )}
 
       {/* Chief Complaint */}
       {chiefComplaint && (
-        <Section title="Chief Complaint" accent="cyan">
-          <p style={{ fontSize: 15, color: 'var(--text-primary)', margin: 0, lineHeight: 1.7 }}>
+        <SectionCard title="Chief Complaint" accent="blue">
+          <p style={{ fontSize: 14.5, color: 'var(--text-body)', lineHeight: 1.7, margin: 0 }}>
             {chiefComplaint}
           </p>
-        </Section>
+        </SectionCard>
       )}
 
       {/* Symptoms */}
       {symptoms.length > 0 && (
-        <Section title="Symptoms" accent="amber">
+        <SectionCard title="Presenting Symptoms" accent="amber">
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
             {symptoms.map((s, i) => (
               <Tag key={i} label={typeof s === 'object' ? s.symptom || s.name || JSON.stringify(s) : s} />
             ))}
           </div>
-        </Section>
+        </SectionCard>
       )}
 
       {/* History */}
       {history && (
-        <Section title="History of Present Illness" accent="cyan">
-          <p style={{ fontSize: 14, color: 'var(--text-primary)', margin: 0, lineHeight: 1.8 }}>
-            {history}
-          </p>
-        </Section>
+        <SectionCard title="History of Present Illness" accent="blue">
+          <p style={{ fontSize: 14, color: 'var(--text-body)', lineHeight: 1.75, margin: 0 }}>{history}</p>
+        </SectionCard>
       )}
 
       {/* Vitals */}
       {vitals && Object.keys(vitals).length > 0 && (
-        <Section title="Vitals" accent="green">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 12 }}>
+        <SectionCard title="Vitals" accent="teal">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: 10 }}>
             {Object.entries(vitals).filter(([, v]) => v && v !== 'N/A').map(([k, v]) => (
               <div key={k} style={{
-                padding: '10px 14px', background: 'var(--bg-secondary)',
-                borderRadius: 8, border: '1px solid var(--border)'
+                padding: '10px 12px',
+                background: 'var(--teal-light)',
+                borderRadius: 8, border: '1px solid #99f6e4',
+                textAlign: 'center',
               }}>
-                <div style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace', textTransform: 'uppercase', marginBottom: 4 }}>
-                  {k.replace(/_/g, ' ')}
-                </div>
-                <div style={{ fontSize: 15, fontWeight: 600, color: 'var(--text-primary)' }}>{v}</div>
+                <div className="section-label" style={{ marginBottom: 4 }}>{k.replace(/_/g, ' ')}</div>
+                <div style={{ fontWeight: 700, fontSize: 15, color: 'var(--text-heading)' }}>{v}</div>
               </div>
             ))}
           </div>
-        </Section>
+        </SectionCard>
       )}
 
       {/* Physical Exam */}
       {physicalExam && (
-        <Section title="Physical Examination" accent="cyan">
-          <p style={{ fontSize: 14, color: 'var(--text-primary)', margin: 0, lineHeight: 1.8 }}>
+        <SectionCard title="Physical Examination" accent="blue">
+          <p style={{ fontSize: 14, color: 'var(--text-body)', lineHeight: 1.75, margin: 0 }}>
             {typeof physicalExam === 'object' ? JSON.stringify(physicalExam, null, 2) : physicalExam}
           </p>
-        </Section>
+        </SectionCard>
       )}
 
       {/* Diagnosis */}
       {diagnosis && (
-        <Section title="Assessment / Diagnosis" accent="amber">
-          <p style={{ fontSize: 14, color: 'var(--text-primary)', margin: 0, lineHeight: 1.8 }}>
+        <SectionCard title="Assessment / Diagnosis" accent="amber">
+          <p style={{ fontSize: 14, color: 'var(--text-body)', lineHeight: 1.75, margin: 0 }}>
             {Array.isArray(diagnosis) ? diagnosis.join('; ') : diagnosis}
           </p>
-        </Section>
+        </SectionCard>
       )}
 
       {/* Plan */}
       {plan && (
-        <Section title="Treatment Plan" accent="green">
-          <p style={{ fontSize: 14, color: 'var(--text-primary)', margin: 0, lineHeight: 1.8 }}>
+        <SectionCard title="Treatment Plan" accent="green">
+          <p style={{ fontSize: 14, color: 'var(--text-body)', lineHeight: 1.75, margin: 0 }}>
             {typeof plan === 'object' ? JSON.stringify(plan, null, 2) : plan}
           </p>
-        </Section>
+        </SectionCard>
       )}
 
       {/* Medications */}
-      <Section title="Medications / Prescription" accent="cyan">
+      <SectionCard title="Medications / Prescription" accent="blue">
         <MedTable medications={medications} />
-      </Section>
+      </SectionCard>
 
       {/* Allergies + Follow-up */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-        <Section title="Allergies" accent="amber">
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+        <SectionCard title="Allergies" accent="red">
           {allergies
-            ? <p style={{ fontSize: 14, color: 'var(--text-primary)', margin: 0 }}>{Array.isArray(allergies) ? allergies.join(', ') : allergies}</p>
-            : <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>None reported</p>
+            ? <p style={{ fontSize: 14, color: 'var(--text-body)', margin: 0 }}>
+                {Array.isArray(allergies) ? allergies.join(', ') : allergies}
+              </p>
+            : <p style={{ fontSize: 13.5, color: 'var(--text-faint)', margin: 0 }}>None reported</p>
           }
-        </Section>
-        <Section title="Follow-up" accent="green">
+        </SectionCard>
+        <SectionCard title="Follow-up" accent="green">
           {followUp
-            ? <p style={{ fontSize: 14, color: 'var(--text-primary)', margin: 0 }}>{followUp}</p>
-            : <p style={{ fontSize: 13, color: 'var(--text-muted)', margin: 0 }}>Not specified</p>
+            ? <p style={{ fontSize: 14, color: 'var(--text-body)', margin: 0 }}>{followUp}</p>
+            : <p style={{ fontSize: 13.5, color: 'var(--text-faint)', margin: 0 }}>Not specified</p>
           }
-        </Section>
+        </SectionCard>
       </div>
 
-      {/* Raw transcript collapsible */}
+      {/* Raw Transcript */}
       {transcript && (
-        <details className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <details className="card" style={{ overflow: 'hidden' }}>
           <summary style={{
             padding: '12px 16px', cursor: 'pointer',
-            fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: 13,
-            color: 'var(--text-secondary)', listStyle: 'none',
-            display: 'flex', alignItems: 'center', gap: 8,
+            fontWeight: 600, fontSize: 13.5,
+            color: 'var(--text-muted)',
+            display: 'flex', alignItems: 'center', gap: 8, listStyle: 'none',
           }}>
-            <span>▶</span> Raw Transcript
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M9 6l6 6-6 6"/>
+            </svg>
+            Raw Transcript
           </summary>
           <div style={{
-            padding: '16px', borderTop: '1px solid var(--border)',
-            fontFamily: 'DM Sans, sans-serif', fontSize: 13,
-            color: 'var(--text-secondary)', lineHeight: 1.8,
-            whiteSpace: 'pre-wrap',
+            padding: '14px 16px', borderTop: '1px solid var(--border)',
+            fontSize: 13.5, color: 'var(--text-body)', lineHeight: 1.8,
+            whiteSpace: 'pre-wrap', background: 'var(--surface-2)',
           }}>
             {transcript}
           </div>
         </details>
       )}
+
     </div>
   )
 }

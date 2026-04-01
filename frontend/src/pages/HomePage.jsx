@@ -43,30 +43,32 @@ function UploadZone({ onFile, isProcessing }) {
       onDrop={handleDrop}
       onClick={() => !isProcessing && inputRef.current?.click()}
       style={{
-        border: `2px dashed ${dragging ? 'var(--accent-cyan)' : 'var(--border)'}`,
-        borderRadius: 12, padding: '28px 24px',
+        border: `2px dashed ${dragging ? 'var(--blue)' : 'var(--border-mid)'}`,
+        borderRadius: 10, padding: '28px 20px',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
         cursor: isProcessing ? 'not-allowed' : 'pointer',
-        background: dragging ? 'var(--accent-cyan-dim)' : 'var(--bg-secondary)',
+        background: dragging ? 'var(--blue-light)' : 'var(--surface-2)',
         transition: 'all 0.2s',
         opacity: isProcessing ? 0.5 : 1,
+        textAlign: 'center',
       }}
     >
       <div style={{
-        width: 48, height: 48, borderRadius: 12,
-        background: 'var(--bg-card)', border: '1px solid var(--border)',
+        width: 44, height: 44, borderRadius: 10,
+        background: 'var(--surface)', border: '1px solid var(--border)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: 'var(--shadow-sm)',
       }}>
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent-cyan)" strokeWidth="2" strokeLinecap="round">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" strokeWidth="2" strokeLinecap="round">
           <path d="M12 2a3 3 0 013 3v7a3 3 0 01-6 0V5a3 3 0 013-3z"/>
           <path d="M19 10v2a7 7 0 01-14 0v-2M12 19v3M8 22h8"/>
         </svg>
       </div>
-      <div style={{ textAlign: 'center' }}>
-        <p style={{ margin: 0, fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: 14, color: 'var(--text-primary)' }}>
+      <div>
+        <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: 'var(--text-heading)' }}>
           Drop audio file here
         </p>
-        <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+        <p style={{ margin: '3px 0 0', fontSize: 12.5, color: 'var(--text-muted)' }}>
           MP3, WAV, M4A — Whisper transcribes automatically
         </p>
       </div>
@@ -77,7 +79,7 @@ function UploadZone({ onFile, isProcessing }) {
 }
 
 export default function HomePage() {
-  const [mode, setMode] = useState('text') // 'text' | 'audio'
+  const [mode, setMode] = useState('text')
   const [transcript, setTranscript] = useState('')
   const [audioFile, setAudioFile] = useState(null)
   const [patientName, setPatientName] = useState('')
@@ -97,7 +99,6 @@ export default function HomePage() {
     setResult(null)
     setError(null)
 
-    // Simulate stage progression while waiting for backend
     let stageIdx = 0
     const interval = setInterval(() => {
       if (stageIdx < STAGES_SEQUENCE.length) {
@@ -115,16 +116,13 @@ export default function HomePage() {
     try {
       const data = await apiCall()
       clearInterval(interval)
-
-      // Mark all done
       const allDone = {}
       STAGES_SEQUENCE.forEach(s => { allDone[s] = 'done' })
       setStages(allDone)
-
       setResult(data.data || data)
       setConsultationId(data.data?.consultationId || data.consultationId)
       setProcessingTimeMs(Date.now() - start)
-      toast.success('Clinical record generated!')
+      toast.success('Clinical record generated successfully.')
     } catch (err) {
       clearInterval(interval)
       const failedStage = STAGES_SEQUENCE[Math.max(0, stageIdx - 1)]
@@ -137,21 +135,15 @@ export default function HomePage() {
   }
 
   const handleSubmit = () => {
-    if (mode === 'text' && !transcript.trim()) {
-      toast.error('Please enter a transcript first')
-      return
-    }
-    if (mode === 'audio' && !audioFile) {
-      toast.error('Please select an audio file first')
-      return
-    }
+    if (mode === 'text' && !transcript.trim()) { toast.error('Please enter a transcript first'); return }
+    if (mode === 'audio' && !audioFile) { toast.error('Please select an audio file first'); return }
 
     if (mode === 'audio') {
-      const formData = new FormData()
-      formData.append('audio', audioFile)
-      if (patientName) formData.append('patientName', patientName)
-      if (doctorName) formData.append('doctorName', doctorName)
-      simulateStages(() => consultationAPI.processAudio(formData))
+      const fd = new FormData()
+      fd.append('audio', audioFile)
+      if (patientName) fd.append('patientName', patientName)
+      if (doctorName) fd.append('doctorName', doctorName)
+      simulateStages(() => consultationAPI.processAudio(fd))
     } else {
       simulateStages(() => consultationAPI.process({
         transcript: transcript.trim(),
@@ -162,150 +154,151 @@ export default function HomePage() {
   }
 
   const handleReset = () => {
-    setResult(null)
-    setStages({})
-    setTranscript('')
-    setAudioFile(null)
-    setPatientName('')
-    setDoctorName('')
-    setProcessingTimeMs(null)
-    setConsultationId(null)
-    setError(null)
+    setResult(null); setStages({}); setTranscript(''); setAudioFile(null)
+    setPatientName(''); setDoctorName(''); setProcessingTimeMs(null)
+    setConsultationId(null); setError(null)
   }
 
   const hasStarted = Object.keys(stages).length > 0
 
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 24px' }}>
-      <Toaster 
+    <div style={{ maxWidth: 1200, margin: '0 auto', padding: '32px 28px' }}>
+      <Toaster
         position="top-right"
         toastOptions={{
           style: {
-            background: 'var(--bg-card)', color: 'var(--text-primary)',
-            border: '1px solid var(--border)', fontFamily: 'DM Sans, sans-serif',
-          }
+            background: '#fff', color: 'var(--text-heading)',
+            border: '1px solid var(--border)', borderRadius: 8,
+            fontSize: 13.5, fontFamily: 'Nunito Sans, sans-serif',
+            boxShadow: 'var(--shadow)',
+          },
+          success: { iconTheme: { primary: 'var(--green)', secondary: '#fff' } },
+          error: { iconTheme: { primary: 'var(--red)', secondary: '#fff' } },
         }}
       />
 
       {/* Page header */}
-      {!hasStarted && (
-        <div className="fade-in" style={{ marginBottom: 40, textAlign: 'center' }}>
-          <div className="badge badge-cyan" style={{ marginBottom: 16 }}>AI CLINICAL DOCUMENTATION</div>
-          <h1 style={{
-            fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 'clamp(28px, 5vw, 48px)',
-            margin: '0 0 12px', letterSpacing: '-0.03em', lineHeight: 1.1,
-          }}>
-            Turn conversations into<br />
-            <span style={{ color: 'var(--accent-cyan)' }} className="text-glow-cyan">clinical records</span>
-          </h1>
-          <p style={{ fontSize: 16, color: 'var(--text-secondary)', margin: 0 }}>
-            Paste a transcript or upload audio — the AI pipeline handles the rest
-          </p>
+      <div className="fade-in" style={{ marginBottom: 28 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
+          <span className="badge badge-blue">AI-Powered</span>
+          <span style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>5-agent pipeline</span>
         </div>
-      )}
+        <h1 style={{ fontSize: 26, fontWeight: 600, marginBottom: 6 }}>
+          New Consultation
+        </h1>
+        <p style={{ fontSize: 14.5, color: 'var(--text-muted)', maxWidth: 520 }}>
+          Paste a transcript or upload audio to automatically generate a structured clinical record and PDF report.
+        </p>
+      </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: hasStarted ? '1fr 1fr' : '1fr', gap: 24, transition: 'all 0.3s' }}>
+      {/* Main layout */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: hasStarted || result ? '1fr 1fr' : '560px 1fr',
+        gap: 24,
+        alignItems: 'start',
+      }}>
 
-        {/* Left column: Input */}
+        {/* ── Left column: Input ── */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {/* Input card */}
-          <div className="card fade-in-d1" style={{ padding: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-              <span style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 15 }}>
-                Consultation Input
-              </span>
-              {/* Mode toggle */}
-              <div style={{
-                display: 'flex', background: 'var(--bg-secondary)',
-                border: '1px solid var(--border)', borderRadius: 8, padding: 3, gap: 2
-              }}>
-                {['text', 'audio'].map(m => (
-                  <button key={m} onClick={() => !isProcessing && setMode(m)} style={{
-                    padding: '4px 12px', borderRadius: 6, border: 'none', cursor: 'pointer',
-                    fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: 12,
-                    background: mode === m ? 'var(--accent-cyan)' : 'transparent',
-                    color: mode === m ? '#000' : 'var(--text-muted)',
-                    transition: 'all 0.15s', textTransform: 'uppercase', letterSpacing: '0.04em',
-                  }}>{m}</button>
-                ))}
-              </div>
+          <div className="card fade-in-d1" style={{ padding: '20px' }}>
+
+            {/* Mode tabs */}
+            <div style={{ display: 'flex', gap: 0, marginBottom: 16,
+              background: 'var(--surface-2)', borderRadius: 8,
+              padding: 3, border: '1px solid var(--border)',
+            }}>
+              {['text', 'audio'].map(m => (
+                <button key={m} onClick={() => setMode(m)} disabled={isProcessing}
+                  style={{
+                    flex: 1, padding: '7px 0',
+                    borderRadius: 6, border: 'none',
+                    fontSize: 13, fontWeight: 700,
+                    cursor: isProcessing ? 'not-allowed' : 'pointer',
+                    background: mode === m ? 'var(--surface)' : 'transparent',
+                    color: mode === m ? 'var(--blue)' : 'var(--text-muted)',
+                    boxShadow: mode === m ? 'var(--shadow-sm)' : 'none',
+                    transition: 'all 0.15s',
+                  }}>
+                  {m === 'text' ? '📝 Text Transcript' : '🎙 Audio File'}
+                </button>
+              ))}
             </div>
 
-            {/* Patient info row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 12 }}>
+            {/* Patient / Doctor fields */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
               <div>
-                <label style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace', 
-                  textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Patient Name (optional)</label>
+                <label className="section-label" style={{ display: 'block', marginBottom: 5 }}>Patient Name</label>
                 <input className="input-field" value={patientName}
                   onChange={e => setPatientName(e.target.value)}
-                  placeholder="e.g. Rajesh Kumar"
-                  disabled={isProcessing}
-                  style={{ padding: '9px 12px', resize: 'none' }} />
+                  placeholder="e.g. Rajesh Kumar" disabled={isProcessing}
+                  style={{ padding: '9px 12px' }} />
               </div>
               <div>
-                <label style={{ fontSize: 11, color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace',
-                  textTransform: 'uppercase', display: 'block', marginBottom: 4 }}>Doctor Name (optional)</label>
+                <label className="section-label" style={{ display: 'block', marginBottom: 5 }}>Doctor Name</label>
                 <input className="input-field" value={doctorName}
                   onChange={e => setDoctorName(e.target.value)}
-                  placeholder="e.g. Dr. Priya Shah"
-                  disabled={isProcessing}
-                  style={{ padding: '9px 12px', resize: 'none' }} />
+                  placeholder="e.g. Dr. Priya Shah" disabled={isProcessing}
+                  style={{ padding: '9px 12px' }} />
               </div>
             </div>
 
+            {/* Input area */}
             {mode === 'text' ? (
-              <>
-                <textarea
-                  className="input-field"
-                  value={transcript}
+              <div>
+                <label className="section-label" style={{ display: 'block', marginBottom: 5 }}>
+                  Consultation Transcript
+                </label>
+                <textarea className="input-field" value={transcript}
                   onChange={e => setTranscript(e.target.value)}
-                  placeholder="Paste the doctor-patient conversation transcript here..."
+                  placeholder="Paste the doctor–patient conversation here…"
                   disabled={isProcessing}
-                  style={{ minHeight: 220, marginBottom: 12, fontFamily: 'DM Sans, sans-serif', fontSize: 13, lineHeight: 1.8 }}
+                  style={{ minHeight: 200, marginBottom: 8, fontSize: 13.5, lineHeight: 1.75 }}
                 />
-                <button onClick={() => setTranscript(SAMPLE_TRANSCRIPT)} disabled={isProcessing}
-                  style={{ fontSize: 12, color: 'var(--accent-cyan)', background: 'none', border: 'none',
-                    cursor: 'pointer', padding: 0, fontFamily: 'Syne, sans-serif', marginBottom: 12 }}>
+                <button className="btn-ghost" onClick={() => setTranscript(SAMPLE_TRANSCRIPT)} disabled={isProcessing}>
                   ↗ Load sample transcript
                 </button>
-              </>
+              </div>
             ) : (
-              <div style={{ marginBottom: 12 }}>
+              <div>
                 <UploadZone onFile={setAudioFile} isProcessing={isProcessing} />
                 {audioFile && (
                   <div style={{
                     marginTop: 10, padding: '10px 14px',
-                    background: 'var(--accent-green-dim)', border: '1px solid #00ff9d33',
-                    borderRadius: 8, display: 'flex', alignItems: 'center', gap: 8
+                    background: 'var(--green-light)', border: '1px solid #bbf7d0',
+                    borderRadius: 8, display: 'flex', alignItems: 'center', gap: 10,
                   }}>
-                    <span style={{ fontSize: 16 }}>🎵</span>
-                    <div>
-                      <p style={{ margin: 0, fontSize: 13, color: 'var(--accent-green)', fontWeight: 600 }}>{audioFile.name}</p>
-                      <p style={{ margin: 0, fontSize: 11, color: 'var(--text-muted)' }}>{(audioFile.size / 1024).toFixed(1)} KB</p>
+                    <span style={{ fontSize: 18 }}>🎵</span>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: 13.5, color: 'var(--green)', fontWeight: 700 }}>{audioFile.name}</p>
+                      <p style={{ margin: 0, fontSize: 11.5, color: 'var(--text-muted)' }}>{(audioFile.size / 1024).toFixed(1)} KB</p>
                     </div>
-                    <button onClick={() => setAudioFile(null)} style={{ marginLeft: 'auto', background: 'none', border: 'none',
-                      cursor: 'pointer', color: 'var(--text-muted)', fontSize: 18 }}>×</button>
+                    <button onClick={() => setAudioFile(null)} style={{
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: 'var(--text-muted)', fontSize: 18, lineHeight: 1,
+                    }}>×</button>
                   </div>
                 )}
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: 10 }}>
+            {/* Actions */}
+            <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
               <button className="btn-primary" onClick={handleSubmit} disabled={isProcessing}
                 style={{ flex: 1, justifyContent: 'center' }}>
                 {isProcessing ? (
                   <>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-                      style={{ animation: 'spin 0.8s linear infinite' }}>
-                      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" strokeLinecap="round"/>
+                    <svg className="spin" width="15" height="15" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
                     </svg>
                     Processing…
                   </>
                 ) : (
                   <>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
                     </svg>
                     Run Pipeline
@@ -323,88 +316,111 @@ export default function HomePage() {
           {/* Pipeline progress */}
           {hasStarted && (
             <div className="fade-in">
-              <PipelineProgress
-                stages={stages}
-                isProcessing={isProcessing}
-                processingTimeMs={processingTimeMs}
-              />
+              <PipelineProgress stages={stages} isProcessing={isProcessing} processingTimeMs={processingTimeMs} />
             </div>
           )}
 
           {/* Error */}
           {error && (
-            <div className="fade-in card" style={{ padding: '16px 20px', borderColor: 'var(--accent-red)', background: '#ff4d6d08' }}>
-              <p style={{ margin: 0, fontFamily: 'Syne, sans-serif', fontWeight: 700, color: 'var(--accent-red)', fontSize: 14 }}>
+            <div className="card fade-in" style={{
+              padding: '14px 18px',
+              borderColor: '#fecaca', background: 'var(--red-light)',
+            }}>
+              <p style={{ margin: '0 0 4px', fontWeight: 700, color: 'var(--red)', fontSize: 13.5 }}>
                 Pipeline Error
               </p>
-              <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--text-secondary)' }}>{error}</p>
+              <p style={{ margin: 0, fontSize: 13.5, color: 'var(--text-body)' }}>{error}</p>
             </div>
           )}
         </div>
 
-        {/* Right column: Results */}
-        {result && (
+        {/* ── Right column: Results or placeholder ── */}
+        {result ? (
           <div className="fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {/* Results header */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div>
-                <h2 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 18, margin: '0 0 4px' }}>
-                  Clinical Record
-                </h2>
+                <h2 style={{ fontSize: 20, marginBottom: 3 }}>Clinical Record</h2>
                 {consultationId && (
-                  <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--text-muted)' }}>
+                  <span style={{ fontSize: 11.5, fontFamily: 'JetBrains Mono, monospace', color: 'var(--text-faint)' }}>
                     ID: {consultationId}
                   </span>
                 )}
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {result.reportPath && (
-                  <a
-                    href={`/api/consultation/${consultationId}/pdf`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn-primary"
-                    style={{ textDecoration: 'none', padding: '8px 16px', fontSize: 13 }}
-                  >
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 16l-5-5h3V4h4v7h3l-5 5zM20 18H4v2h16v-2z"/>
-                    </svg>
-                    PDF
-                  </a>
-                )}
-              </div>
+              {result.reportPath && (
+                <a href={`/api/consultation/${consultationId}/pdf`} target="_blank" rel="noreferrer"
+                  className="btn-primary" style={{ padding: '8px 16px', fontSize: 13 }}>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 16l-5-5h3V4h4v7h3l-5 5zM20 18H4v2h16v-2z"/>
+                  </svg>
+                  Download PDF
+                </a>
+              )}
             </div>
 
-            <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 200px)', paddingRight: 4 }}>
+            <div style={{ overflowY: 'auto', maxHeight: 'calc(100vh - 180px)', paddingRight: 2 }}>
               <EMRResults data={result} />
             </div>
           </div>
-        )}
+        ) : !hasStarted ? (
+          /* Feature cards when idle */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 60 }}>
+            {[
+              {
+                icon: '🎙',
+                title: 'Audio or Text Input',
+                desc: 'Upload an MP3/WAV recording or paste a typed transcript — both work seamlessly.',
+                accent: 'var(--blue)',
+                bg: 'var(--blue-light)',
+              },
+              {
+                icon: '🤖',
+                title: 'Groq LLaMA 70B',
+                desc: 'A 5-agent pipeline extracts, structures, and validates the clinical record in seconds.',
+                accent: 'var(--teal)',
+                bg: 'var(--teal-light)',
+              },
+              {
+                icon: '📄',
+                title: 'Instant PDF Report',
+                desc: 'Download a formatted prescription and clinical summary with one click.',
+                accent: 'var(--amber)',
+                bg: 'var(--amber-light)',
+              },
+            ].map(({ icon, title, desc, accent, bg }, i) => (
+              <div key={title} className={`card fade-in-d${i + 2}`}
+                style={{ padding: '16px 18px', display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                <div style={{
+                  width: 40, height: 40, borderRadius: 10,
+                  background: bg, border: `1px solid ${accent}22`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 20, flexShrink: 0,
+                }}>
+                  {icon}
+                </div>
+                <div>
+                  <h3 style={{ fontSize: 14.5, fontFamily: 'Nunito Sans, sans-serif', fontWeight: 700, marginBottom: 4 }}>{title}</h3>
+                  <p style={{ fontSize: 13.5, color: 'var(--text-muted)', margin: 0, lineHeight: 1.6 }}>{desc}</p>
+                </div>
+              </div>
+            ))}
 
-        {/* Placeholder when not started */}
-        {!hasStarted && !result && (
-          <div style={{ display: 'none' }} />
-        )}
-      </div>
-
-      {/* Bottom info strip when not started */}
-      {!hasStarted && (
-        <div className="fade-in-d3" style={{
-          marginTop: 48, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16
-        }}>
-          {[
-            { icon: '🎙️', title: 'Audio or Text', desc: 'Upload audio or paste a transcript — both are supported' },
-            { icon: '🤖', title: 'Groq LLaMA 70B', desc: '5-agent pipeline extracts, structures, and validates records' },
-            { icon: '📄', title: 'PDF Export', desc: 'Download a formatted prescription & clinical summary instantly' },
-          ].map(({ icon, title, desc }) => (
-            <div key={title} className="card" style={{ padding: '20px 18px', textAlign: 'center' }}>
-              <div style={{ fontSize: 28, marginBottom: 10 }}>{icon}</div>
-              <h3 style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 14, margin: '0 0 6px' }}>{title}</h3>
-              <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>{desc}</p>
+            {/* Trust strip */}
+            <div className="fade-in-d5" style={{
+              marginTop: 4, padding: '12px 16px', borderRadius: 8,
+              background: 'var(--surface-2)', border: '1px solid var(--border)',
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              <p style={{ fontSize: 12.5, color: 'var(--text-muted)', margin: 0 }}>
+                Data is processed locally. No consultation data is stored without your consent.
+              </p>
             </div>
-          ))}
-        </div>
-      )}
+          </div>
+        ) : null}
+      </div>
     </div>
   )
 }

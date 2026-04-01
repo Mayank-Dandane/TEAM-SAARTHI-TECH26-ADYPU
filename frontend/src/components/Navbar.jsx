@@ -4,70 +4,70 @@ export default function Navbar() {
   const { pathname } = useLocation()
 
   return (
-    <nav style={{ 
+    <nav style={{
+      background: '#fff',
       borderBottom: '1px solid var(--border)',
-      background: 'var(--bg-primary)',
       position: 'sticky', top: 0, zIndex: 50,
+      boxShadow: '0 1px 4px rgba(15,23,42,0.06)',
     }}>
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 60 }}>
-          
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 28px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: 62 }}>
+
           {/* Logo */}
           <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
-              width: 32, height: 32, borderRadius: 8,
-              background: 'var(--accent-cyan)',
+              width: 34, height: 34, borderRadius: 8,
+              background: 'var(--blue)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
+              flexShrink: 0,
             }}>
+              {/* Caduceus-style cross */}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M9 12h6M12 9v6M12 3a9 9 0 100 18A9 9 0 0012 3z" 
-                  stroke="#000" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M12 5v14M5 12h14" stroke="#fff" strokeWidth="2.5" strokeLinecap="round"/>
+                <circle cx="12" cy="12" r="3" fill="#fff" fillOpacity="0.25"/>
               </svg>
             </div>
-            <span style={{ 
-              fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 16,
-              color: 'var(--text-primary)', letterSpacing: '-0.02em'
-            }}>
-              Doctor<span style={{ color: 'var(--accent-cyan)' }}>Copilot</span>
-            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.2 }}>
+              <span style={{
+                fontFamily: 'Lora, serif', fontWeight: 600, fontSize: 15,
+                color: 'var(--text-heading)',
+              }}>
+                Doctor<span style={{ color: 'var(--blue)' }}>Copilot</span>
+              </span>
+              <span style={{ fontSize: 10.5, color: 'var(--text-faint)', fontWeight: 500, letterSpacing: '0.03em' }}>
+                AI Clinical Documentation
+              </span>
+            </div>
           </Link>
 
-          {/* Nav links */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            {[
-              { to: '/', label: 'New Consultation' },
-            ].map(({ to, label }) => (
-              <Link
-                key={to}
-                to={to}
-                style={{
-                  textDecoration: 'none',
-                  padding: '6px 14px',
-                  borderRadius: 6,
-                  fontSize: 13,
-                  fontFamily: 'Syne, sans-serif',
-                  fontWeight: 600,
-                  color: pathname === to ? 'var(--accent-cyan)' : 'var(--text-secondary)',
-                  background: pathname === to ? 'var(--accent-cyan-dim)' : 'transparent',
-                  border: pathname === to ? '1px solid #00d4ff33' : '1px solid transparent',
-                  transition: 'all 0.15s',
-                }}
-              >
+          {/* Nav */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            {[{ to: '/', label: 'New Consultation' }].map(({ to, label }) => (
+              <Link key={to} to={to} style={{
+                textDecoration: 'none',
+                padding: '6px 14px', borderRadius: 6,
+                fontSize: 13.5, fontWeight: 600,
+                color: pathname === to ? 'var(--blue)' : 'var(--text-muted)',
+                background: pathname === to ? 'var(--blue-light)' : 'transparent',
+                transition: 'all 0.15s',
+              }}>
                 {label}
               </Link>
             ))}
           </div>
 
-          {/* Status indicator */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Status */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
             <div className="pulse-dot" />
-            <span style={{ 
-              fontSize: 12, fontFamily: 'JetBrains Mono, monospace',
-              color: 'var(--accent-green)' 
+            <span style={{
+              fontSize: 12, fontWeight: 600,
+              color: 'var(--green)',
+              fontFamily: 'Nunito Sans, sans-serif',
             }}>
-              SYSTEM ONLINE
+              System Online
             </span>
           </div>
+
         </div>
       </div>
     </nav>
